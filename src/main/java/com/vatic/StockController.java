@@ -11,6 +11,9 @@ public class StockController {
     @Autowired
     private StockRepository stockRepository;
 
+    @Autowired
+    private StockPriceService stockPriceService;
+
     @GetMapping("/")
     public Map<String, String> home() {
         return Map.of("message", "Vatic API is running");
@@ -24,5 +27,10 @@ public class StockController {
     @PostMapping("/stocks")
     public Stock addStock(@RequestBody Stock stock) {
         return stockRepository.save(stock);
+    }
+
+    @GetMapping("/stocks/{symbol}/price")
+    public Map<String, Object> getPrice(@PathVariable String symbol) {
+        return stockPriceService.getQuote(symbol);
     }
 }
