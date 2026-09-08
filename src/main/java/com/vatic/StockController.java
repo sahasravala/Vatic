@@ -17,6 +17,10 @@ public class StockController {
     @Autowired
     private FeatureEngineeringService featureEngineeringService;
 
+    @Autowired
+    private HistoricalPriceRepository historicalPriceRepository;
+
+
     @GetMapping("/")
     public Map<String, String> home() {
         return Map.of("message", "Vatic API is running");
@@ -36,10 +40,49 @@ public class StockController {
     public List<TrainingDataPoint> getTrainingData(@PathVariable String symbol) {
         return featureEngineeringService.generateTrainingData(symbol);
     }
-    
+
     @PostMapping("/stocks")
     public Stock addStock(@RequestBody Stock stock) {
         return stockRepository.save(stock);
+    }
+
+    @PostMapping("/stocks/history/backfill")
+    public Map<String, Object> backfillHistory(
+        @RequestBody List<HistoricalPrice> prices
+    ) {
+
+        int inserted = 0;
+        int skipped = 0;
+
+        for (HistoricalPrice price : prices) {
+
+            String normalizedSymbol =
+                    price.getSymbol().toUpperCase();
+
+            price.setSymbol(normalizedSymbol);
+
+            boolean alreadyExists =
+                    historicalPriceRepository
+                            .findBySymbolAndDate(
+                                    normalizedSymbol,
+                                    price.getDate()
+                             )
+                            .isPresent();
+
+            if (alreadyExists) {
+                skipped++;
+                continue;
+            }
+
+            historicalPriceRepository.save(price);
+            inserted++;
+        }
+
+        return Map.of(
+                "received", prices.size(),
+                "inserted", inserted,
+                "skipped", skipped
+        );
     }
 
     @GetMapping("/stocks/{symbol}/price")
