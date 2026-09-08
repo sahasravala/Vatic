@@ -17,15 +17,15 @@ function App() {
             .then(priceData => {
               const quote = priceData["Global Quote"]
               if (quote && quote["05. price"]) {
-  setPrices(prev => ({
-    ...prev,
-    [stock.symbol]: {
-      price: parseFloat(quote["05. price"]).toFixed(2),
-      change: parseFloat(quote["09. change"]).toFixed(2),
-      changePercent: quote["10. change percent"]
-    }
-  }))
-}
+                setPrices(prev => ({
+                  ...prev,
+                  [stock.symbol]: {
+                    price: parseFloat(quote["05. price"]).toFixed(2),
+                    change: parseFloat(quote["09. change"]).toFixed(2),
+                    changePercent: quote["10. change percent"]
+                  }
+                }))
+              }
             })
         })
       })
@@ -44,64 +44,70 @@ function App() {
   const overallAccuracy = totalScored > 0 ? Math.round((totalCorrect / totalScored) * 100) : null
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white" style={{background: "radial-gradient(ellipse at top, #0a0f1e 0%, #000000 70%)"}}>
 
-      {/* Top nav */}
-      <nav className="border-b border-white/10 px-8 py-4 flex items-center justify-between backdrop-blur-sm sticky top-0 bg-black/80 z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-          <span className="text-white font-semibold tracking-wide text-lg">VATIC</span>
+      {/* Nav */}
+      <nav className="px-8 py-4 flex items-center justify-between sticky top-0 z-10" style={{background: "rgba(0,0,0,0.8)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,200,255,0.1)"}}>
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-cyan-400" style={{boxShadow: "0 0 8px #00d4ff, 0 0 20px #00d4ff"}}></div>
+          <span className="font-bold tracking-widest text-lg" style={{background: "linear-gradient(90deg, #fff, #00d4ff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"}}>VATIC</span>
         </div>
-        <div className="flex items-center gap-6 text-sm text-white/40">
-          <span className="text-white/70">Dashboard</span>
-          <span>Models</span>
-          <span>History</span>
-          <span>Leaderboard</span>
+        <div className="flex items-center gap-8 text-sm">
+          <span className="text-cyan-400 border-b border-cyan-400 pb-0.5">Dashboard</span>
+          <span className="text-white/30 hover:text-white/60 cursor-pointer transition-colors">Models</span>
+          <span className="text-white/30 hover:text-white/60 cursor-pointer transition-colors">History</span>
+          <span className="text-white/30 hover:text-white/60 cursor-pointer transition-colors">Leaderboard</span>
         </div>
-        <div className="text-white/30 text-xs">
+        <div className="text-white/20 text-xs font-mono">
           {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-8 py-10">
+      {/* Hero */}
+      <div className="px-8 pt-12 pb-8 max-w-5xl mx-auto">
+        <p className="text-cyan-400/60 text-xs uppercase tracking-widest mb-2 font-mono">Market Intelligence Platform</p>
+        <h1 className="text-4xl font-light text-white mb-1">Predictive Analytics</h1>
+        <p className="text-white/30 text-sm">ML-powered forecasting with real-time accuracy tracking</p>
+      </div>
 
-        {/* Stats row */}
+      <div className="max-w-5xl mx-auto px-8 pb-10">
+
+        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-10">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Stocks Tracked</p>
-            <p className="text-3xl font-light text-white">{stocks.length}</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Predictions Made</p>
-            <p className="text-3xl font-light text-white">{predictions.length}</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Overall Accuracy</p>
-            <p className="text-3xl font-light text-white">{overallAccuracy !== null ? `${overallAccuracy}%` : "—"}</p>
-          </div>
+          {[
+            { label: "Stocks Tracked", value: stocks.length },
+            { label: "Predictions Made", value: predictions.length },
+            { label: "Overall Accuracy", value: overallAccuracy !== null ? `${overallAccuracy}%` : "—" }
+          ].map((stat, i) => (
+            <div key={i} className="rounded-2xl p-6 relative overflow-hidden" style={{background: "linear-gradient(135deg, rgba(0,212,255,0.05) 0%, rgba(0,0,0,0) 100%)", border: "1px solid rgba(0,212,255,0.15)", boxShadow: "inset 0 1px 0 rgba(0,212,255,0.1)"}}>
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10" style={{background: "radial-gradient(circle, #00d4ff, transparent)", transform: "translate(30%, -30%)"}}></div>
+              <p className="text-white/30 text-xs uppercase tracking-widest mb-3 font-mono">{stat.label}</p>
+              <p className="text-4xl font-light text-white font-mono">{stat.value}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Model comparison */}
+        {/* Model Performance */}
         <div className="mb-10">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">Model Performance</p>
-          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <p className="text-white/30 text-xs uppercase tracking-widest mb-4 font-mono">Model Performance</p>
+          <div className="rounded-2xl overflow-hidden" style={{border: "1px solid rgba(0,212,255,0.1)", background: "rgba(0,212,255,0.02)"}}>
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left px-6 py-3 text-white/40 text-xs uppercase tracking-widest font-normal">Model</th>
-                  <th className="text-right px-6 py-3 text-white/40 text-xs uppercase tracking-widest font-normal">Correct</th>
-                  <th className="text-right px-6 py-3 text-white/40 text-xs uppercase tracking-widest font-normal">Total</th>
-                  <th className="text-right px-6 py-3 text-white/40 text-xs uppercase tracking-widest font-normal">Accuracy</th>
+                <tr style={{borderBottom: "1px solid rgba(0,212,255,0.1)"}}>
+                  <th className="text-left px-6 py-3 text-white/30 text-xs uppercase tracking-widest font-mono font-normal">Model</th>
+                  <th className="text-right px-6 py-3 text-white/30 text-xs uppercase tracking-widest font-mono font-normal">Correct</th>
+                  <th className="text-right px-6 py-3 text-white/30 text-xs uppercase tracking-widest font-mono font-normal">Total</th>
+                  <th className="text-right px-6 py-3 text-white/30 text-xs uppercase tracking-widest font-mono font-normal">Accuracy</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(accuracy).map(([model, stats]) => (
-                  <tr key={model} className="border-b border-white/5 last:border-0">
-                    <td className="px-6 py-4 text-white text-sm">{model.replace("_", " ")}</td>
-                    <td className="px-6 py-4 text-right text-emerald-400 text-sm">{stats.correct}</td>
-                    <td className="px-6 py-4 text-right text-white/40 text-sm">{stats.total}</td>
+                  <tr key={model} style={{borderBottom: "1px solid rgba(255,255,255,0.03)"}}>
+                    <td className="px-6 py-4 text-white text-sm font-mono">{model.replace("_", " ")}</td>
+                    <td className="px-6 py-4 text-right text-cyan-400 text-sm font-mono">{stats.correct}</td>
+                    <td className="px-6 py-4 text-right text-white/30 text-sm font-mono">{stats.total}</td>
                     <td className="px-6 py-4 text-right">
-                      <span className={`text-sm font-medium ${parseInt(stats.accuracy) >= 50 ? "text-emerald-400" : "text-red-400"}`}>
+                      <span className="text-sm font-mono font-medium" style={{color: parseInt(stats.accuracy) >= 50 ? "#00d4ff" : "#ff4d6d", textShadow: parseInt(stats.accuracy) >= 50 ? "0 0 10px rgba(0,212,255,0.5)" : "0 0 10px rgba(255,77,109,0.5)"}}>
                         {stats.accuracy}
                       </span>
                     </td>
@@ -112,33 +118,36 @@ function App() {
           </div>
         </div>
 
-        {/* Watchlist with live prices */}
+        {/* Watchlist */}
         <div className="mb-10">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">Watchlist</p>
+          <p className="text-white/30 text-xs uppercase tracking-widest mb-4 font-mono">Watchlist</p>
           <div className="grid grid-cols-3 gap-3">
             {stocks.map(stock => {
               const price = prices[stock.symbol]
               const isPositive = price && parseFloat(price.change) >= 0
               return (
-                <div key={stock.id} className="bg-white/5 hover:bg-white/8 border border-white/10 rounded-2xl p-5 cursor-pointer transition-all duration-200">
+                <div key={stock.id} className="rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:scale-105" style={{background: "linear-gradient(135deg, rgba(0,212,255,0.05), rgba(0,0,0,0))", border: "1px solid rgba(0,212,255,0.12)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)"}}>
                   <div className="flex items-start justify-between mb-2">
-                    <span className="text-white font-semibold text-lg">{stock.symbol}</span>
+                    <span className="text-white font-bold text-xl font-mono">{stock.symbol}</span>
                     {price && (
-                      <span className={`text-xs px-2 py-1 rounded-full ${isPositive ? "bg-emerald-400/10 text-emerald-400" : "bg-red-400/10 text-red-400"}`}>
+                      <span className="text-xs px-2 py-1 rounded-full font-mono" style={{background: isPositive ? "rgba(0,212,255,0.1)" : "rgba(255,77,109,0.1)", color: isPositive ? "#00d4ff" : "#ff4d6d"}}>
                         {isPositive ? "+" : ""}{price.changePercent}
                       </span>
                     )}
                   </div>
-                  <p className="text-white/40 text-sm mb-3">{stock.name}</p>
+                  <p className="text-white/30 text-xs mb-4 font-mono">{stock.name}</p>
                   {price ? (
                     <div>
-                      <p className="text-white text-2xl font-light">${price.price}</p>
-                      <p className={`text-xs mt-1 ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+                      <p className="text-white text-3xl font-light font-mono">${price.price}</p>
+                      <p className="text-xs mt-1 font-mono" style={{color: isPositive ? "#00d4ff" : "#ff4d6d"}}>
                         {isPositive ? "▲" : "▼"} ${Math.abs(price.change)}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-white/20 text-sm">Loading...</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 animate-pulse"></div>
+                      <p className="text-white/20 text-xs font-mono">fetching price</p>
+                    </div>
                   )}
                 </div>
               )
@@ -148,35 +157,33 @@ function App() {
 
         {/* Predictions */}
         <div>
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">Recent Predictions</p>
+          <p className="text-white/30 text-xs uppercase tracking-widest mb-4 font-mono">Recent Predictions</p>
           <div className="space-y-2">
             {predictions.map(prediction => (
-              <div key={prediction.id} className="bg-white/5 hover:bg-white/8 border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between transition-all duration-200">
+              <div key={prediction.id} className="rounded-2xl px-6 py-4 flex items-center justify-between transition-all duration-200 hover:scale-[1.01]" style={{background: "rgba(0,212,255,0.02)", border: "1px solid rgba(0,212,255,0.08)"}}>
                 <div className="flex items-center gap-5">
-                  <span className="text-white font-semibold w-14">{prediction.symbol}</span>
-                  <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                    prediction.predictedDirection === "UP"
-                      ? "bg-emerald-400/10 text-emerald-400"
-                      : "bg-red-400/10 text-red-400"
-                  }`}>
+                  <span className="text-white font-bold w-14 font-mono">{prediction.symbol}</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono" style={{
+                    background: prediction.predictedDirection === "UP" ? "rgba(0,212,255,0.1)" : "rgba(255,77,109,0.1)",
+                    color: prediction.predictedDirection === "UP" ? "#00d4ff" : "#ff4d6d",
+                    border: `1px solid ${prediction.predictedDirection === "UP" ? "rgba(0,212,255,0.2)" : "rgba(255,77,109,0.2)"}`
+                  }}>
                     <span>{prediction.predictedDirection === "UP" ? "↑" : "↓"}</span>
                     <span>{prediction.predictedDirection}</span>
                   </div>
-                  <span className="text-white/30 text-xs">{prediction.modelUsed.replace("_", " ")}</span>
+                  <span className="text-white/20 text-xs font-mono">{prediction.modelUsed.replace("_", " ")}</span>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-right">
-                    <p className="text-white/30 text-xs mb-0.5">Confidence</p>
-                    <p className="text-white text-sm">{(prediction.confidence * 100).toFixed(0)}%</p>
+                    <p className="text-white/20 text-xs mb-0.5 font-mono">confidence</p>
+                    <p className="text-white text-sm font-mono">{(prediction.confidence * 100).toFixed(0)}%</p>
                   </div>
-                  <div className={`text-xs font-medium px-3 py-1 rounded-full ${
-                    prediction.wasCorrect === true
-                      ? "bg-emerald-400/10 text-emerald-400"
-                      : prediction.wasCorrect === false
-                      ? "bg-red-400/10 text-red-400"
-                      : "bg-white/5 text-white/30"
-                  }`}>
-                    {prediction.wasCorrect === true ? "✓ Correct" : prediction.wasCorrect === false ? "✗ Wrong" : "Pending"}
+                  <div className="text-xs font-mono px-3 py-1 rounded-full" style={{
+                    background: prediction.wasCorrect === true ? "rgba(0,212,255,0.1)" : prediction.wasCorrect === false ? "rgba(255,77,109,0.1)" : "rgba(255,255,255,0.05)",
+                    color: prediction.wasCorrect === true ? "#00d4ff" : prediction.wasCorrect === false ? "#ff4d6d" : "rgba(255,255,255,0.2)",
+                    textShadow: prediction.wasCorrect === true ? "0 0 10px rgba(0,212,255,0.5)" : prediction.wasCorrect === false ? "0 0 10px rgba(255,77,109,0.5)" : "none"
+                  }}>
+                    {prediction.wasCorrect === true ? "✓ CORRECT" : prediction.wasCorrect === false ? "✗ WRONG" : "PENDING"}
                   </div>
                 </div>
               </div>

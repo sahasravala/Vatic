@@ -14,6 +14,9 @@ public class StockController {
     @Autowired
     private StockPriceService stockPriceService;
 
+    @Autowired
+    private FeatureEngineeringService featureEngineeringService;
+
     @GetMapping("/")
     public Map<String, String> home() {
         return Map.of("message", "Vatic API is running");
@@ -24,6 +27,11 @@ public class StockController {
         return stockRepository.findAll();
     }
 
+    @GetMapping("/stocks/{symbol}/features")
+    public List<MarketFeatures> getFeatures(@PathVariable String symbol) {
+        return featureEngineeringService.generateFeatures(symbol);
+    }
+
     @PostMapping("/stocks")
     public Stock addStock(@RequestBody Stock stock) {
         return stockRepository.save(stock);
@@ -32,5 +40,15 @@ public class StockController {
     @GetMapping("/stocks/{symbol}/price")
     public Map<String, Object> getPrice(@PathVariable String symbol) {
         return stockPriceService.getQuote(symbol);
+    }
+
+    @GetMapping("/stocks/{symbol}/history")
+    public List<HistoricalPrice> getHistory(@PathVariable String symbol) {
+        return stockPriceService.getDailyHistory(symbol);
+    }
+
+    @GetMapping("/stocks/{symbol}/history/saved")
+    public List<HistoricalPrice> getSavedHistory(@PathVariable String symbol) {
+        return stockPriceService.getSavedHistory(symbol);
     }
 }
