@@ -32,6 +32,11 @@ public class StockController {
         return featureEngineeringService.generateFeatures(symbol);
     }
 
+    @GetMapping("/stocks/{symbol}/training-data")
+    public List<TrainingDataPoint> getTrainingData(@PathVariable String symbol) {
+        return featureEngineeringService.generateTrainingData(symbol);
+    }
+    
     @PostMapping("/stocks")
     public Stock addStock(@RequestBody Stock stock) {
         return stockRepository.save(stock);

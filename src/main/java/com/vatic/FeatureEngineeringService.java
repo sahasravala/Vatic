@@ -3,9 +3,12 @@ package com.vatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class FeatureEngineeringService {
@@ -73,6 +76,78 @@ public class FeatureEngineeringService {
         );
 
         return features;
+    }
+
+    public List<TrainingDataPoint> generateTrainingData(String symbol) {
+
+        String normalizedSymbol = symbol.toUpperCase();
+
+        List<MarketFeatures> features = generateFeatures(normalizedSymbol);
+
+        features.sort(
+                Comparator.comparing(MarketFeatures::getDate)
+        );
+
+        List<HistoricalPrice> prices =
+                historicalPriceRepository
+                        .findBySymbolOrderByDateDesc(normalizedSymbol);
+
+        prices.sort(
+                Comparator.comparing(HistoricalPrice::getDate)
+        );
+
+        Map<LocalDate, HistoricalPrice> pricesByDate =
+                prices.stream()
+                        .collect(Collectors.toMap(
+                                HistoricalPrice::getDate,
+                                price -> price
+                        ));
+
+        List<TrainingDataPoint> trainingData = new ArrayList<>();
+
+        for (int i = 0; i < features.size() - 1; i++) {
+
+            MarketFeatures currentFeatures = features.get(i);
+            MarketFeatures nextFeatures = features.get(i + 1);
+
+            HistoricalPrice currentPrice =
+                    pricesByDate.get(currentFeatures.getDate());
+
+            HistoricalPrice nextPrice =
+                    pricesByDate.get(nextFeatures.getDate());
+
+            if (currentPrice == null || nextPrice == null) {
+                continue;
+            }
+
+            String target;
+
+            if (nextPrice.getClose() > currentPrice.getClose()) {
+                target = "UP";
+            } else {
+                target = "DOWN";
+            }
+
+            TrainingDataPoint dataPoint = new TrainingDataPoint(
+                    normalizedSymbol,
+                    currentFeatures.getDate(),
+                    currentFeatures.getDailyReturn(),
+                    currentFeatures.getMovingAverage5(),
+                    currentFeatures.getMovingAverage20(),
+                    currentFeatures.getMomentum5(),
+                    currentFeatures.getVolatility20(),
+                    currentFeatures.getVolumeChange(),
+                    target
+            );
+
+            trainingData.add(dataPoint);
+        }
+
+        trainingData.sort(
+                Comparator.comparing(TrainingDataPoint::getDate).reversed()
+        );
+
+        return trainingData;
     }
 
     private double calculateMovingAverage(
