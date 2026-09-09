@@ -7,8 +7,8 @@ const C = {
   accent: "#8B5CF6", accent2: "#6366F1", up: "#4ADE80", down: "#F87171",
 }
 
-const ML_API = "http://localhost:8000"
-const API = "http://localhost:8080"
+const API = import.meta.env.VITE_API_URL || "http://localhost:8080"
+const ML_API = import.meta.env.VITE_ML_API_URL || "http://localhost:8000"
 const MARKET_FEATURES = ["marketReturn1d", "marketReturn5d", "vixLevel", "vixChange"]
 
 const FEATURE_LABELS = {
