@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import requests
 import pandas as pd
 import numpy as np
+import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -17,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SPRING_BOOT = "http://localhost:8080"
+SPRING_BOOT = os.environ.get("SPRING_BOOT_URL", "http://localhost:8080")
 
 FEATURES = [
     "return1d", "return2d", "return5d", "return10d",
