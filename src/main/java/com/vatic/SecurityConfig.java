@@ -32,21 +32,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+        @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // no cookies, so CSRF protection isn't applicable
             .csrf(csrf -> csrf.disable())
-            // JWTs carry the identity, so no server-side sessions
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET,
                         "/", "/evaluation", "/stocks/**", "/training-data/**",
                         "/predictions", "/predictions/**", "/leaderboard").permitAll()
-                .requestMatchers(HttpMethod.POST, "/stocks/history/backfill").permitAll()
+                .requestMatchers(HttpMethod.POST, "/stocks/history/backfill", "/scoring/run").permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Sign in to do that\"}");
+                })
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .httpBasic(basic -> basic.disable())
