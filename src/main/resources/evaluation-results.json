@@ -1,0 +1,241 @@
+{
+  "generatedAt": "2026-09-09T10:06:00.916918",
+  "dataset": {
+    "totalExamples": 29568,
+    "tickers": 24,
+    "startDate": "2021-10-08",
+    "endDate": "2026-09-04",
+    "overallUpRate": 0.5215435606060606
+  },
+  "split": {
+    "cutoffDate": "2025-09-12",
+    "trainSize": 23640,
+    "testSize": 5928,
+    "trainUpRate": 0.5225465313028764,
+    "testUpRate": 0.5175438596491229
+  },
+  "models": [
+    {
+      "name": "Baseline (majority class)",
+      "accuracy": 0.5175438596491229,
+      "vsBaseline": 0.0,
+      "predictedUpRate": 1.0
+    },
+    {
+      "name": "Random Forest",
+      "accuracy": 0.5005060728744939,
+      "vsBaseline": -0.01703778677462897,
+      "predictedUpRate": 0.5696693657219973
+    },
+    {
+      "name": "Logistic Regression",
+      "accuracy": 0.4973009446693657,
+      "vsBaseline": -0.020242914979757165,
+      "predictedUpRate": 0.49055330634278005
+    }
+  ],
+  "featureImportance": [
+    {
+      "feature": "marketReturn1d",
+      "importance": 0.16636188659964882
+    },
+    {
+      "feature": "vixChange",
+      "importance": 0.15086444348182335
+    },
+    {
+      "feature": "vixLevel",
+      "importance": 0.12595831222262088
+    },
+    {
+      "feature": "marketReturn5d",
+      "importance": 0.10560417187273936
+    },
+    {
+      "feature": "gapOpen",
+      "importance": 0.06344606419842942
+    },
+    {
+      "feature": "volatility5",
+      "importance": 0.033710034955939536
+    },
+    {
+      "feature": "return10d",
+      "importance": 0.03258779302639583
+    },
+    {
+      "feature": "return2d",
+      "importance": 0.03065666135379015
+    },
+    {
+      "feature": "return1d",
+      "importance": 0.03033735851172518
+    },
+    {
+      "feature": "return5d",
+      "importance": 0.029566763058745234
+    },
+    {
+      "feature": "ma5VsMa20",
+      "importance": 0.028304559733319735
+    },
+    {
+      "feature": "closePosition",
+      "importance": 0.02764034584365255
+    },
+    {
+      "feature": "priceVsMa20",
+      "importance": 0.027289167892289218
+    },
+    {
+      "feature": "volatility20",
+      "importance": 0.027236226346941304
+    },
+    {
+      "feature": "volumeVsAvg",
+      "importance": 0.02332840921183675
+    },
+    {
+      "feature": "priceVsMa5",
+      "importance": 0.02136894151106161
+    },
+    {
+      "feature": "excessReturn5d",
+      "importance": 0.021113195034155874
+    },
+    {
+      "feature": "excessReturn1d",
+      "importance": 0.020275230950288013
+    },
+    {
+      "feature": "intradayRange",
+      "importance": 0.019971804358188582
+    },
+    {
+      "feature": "relativeStrength20",
+      "importance": 0.014378629836408592
+    }
+  ],
+  "byTicker": [
+    {
+      "symbol": "CVX",
+      "accuracy": 0.5506072874493927,
+      "days": 247
+    },
+    {
+      "symbol": "CAT",
+      "accuracy": 0.5384615384615384,
+      "days": 247
+    },
+    {
+      "symbol": "XOM",
+      "accuracy": 0.5222672064777328,
+      "days": 247
+    },
+    {
+      "symbol": "JNJ",
+      "accuracy": 0.5222672064777328,
+      "days": 247
+    },
+    {
+      "symbol": "UNH",
+      "accuracy": 0.5182186234817814,
+      "days": 247
+    },
+    {
+      "symbol": "PFE",
+      "accuracy": 0.5182186234817814,
+      "days": 247
+    },
+    {
+      "symbol": "JPM",
+      "accuracy": 0.5141700404858299,
+      "days": 247
+    },
+    {
+      "symbol": "V",
+      "accuracy": 0.5141700404858299,
+      "days": 247
+    },
+    {
+      "symbol": "GS",
+      "accuracy": 0.5101214574898786,
+      "days": 247
+    },
+    {
+      "symbol": "BAC",
+      "accuracy": 0.5101214574898786,
+      "days": 247
+    },
+    {
+      "symbol": "ORCL",
+      "accuracy": 0.5060728744939271,
+      "days": 247
+    },
+    {
+      "symbol": "HD",
+      "accuracy": 0.5060728744939271,
+      "days": 247
+    },
+    {
+      "symbol": "AAPL",
+      "accuracy": 0.5020242914979757,
+      "days": 247
+    },
+    {
+      "symbol": "INTC",
+      "accuracy": 0.5020242914979757,
+      "days": 247
+    },
+    {
+      "symbol": "AMD",
+      "accuracy": 0.4979757085020243,
+      "days": 247
+    },
+    {
+      "symbol": "CRM",
+      "accuracy": 0.4979757085020243,
+      "days": 247
+    },
+    {
+      "symbol": "META",
+      "accuracy": 0.4979757085020243,
+      "days": 247
+    },
+    {
+      "symbol": "KO",
+      "accuracy": 0.4898785425101215,
+      "days": 247
+    },
+    {
+      "symbol": "GOOGL",
+      "accuracy": 0.4817813765182186,
+      "days": 247
+    },
+    {
+      "symbol": "MSFT",
+      "accuracy": 0.47368421052631576,
+      "days": 247
+    },
+    {
+      "symbol": "NVDA",
+      "accuracy": 0.46558704453441296,
+      "days": 247
+    },
+    {
+      "symbol": "AMZN",
+      "accuracy": 0.46153846153846156,
+      "days": 247
+    },
+    {
+      "symbol": "PG",
+      "accuracy": 0.46153846153846156,
+      "days": 247
+    },
+    {
+      "symbol": "WMT",
+      "accuracy": 0.4493927125506073,
+      "days": 247
+    }
+  ]
+}

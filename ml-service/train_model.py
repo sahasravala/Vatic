@@ -127,3 +127,60 @@ print("SUMMARY")
 print(f"  Baseline             {baseline_acc:.4f}")
 print(f"  Random Forest        {rf_acc:.4f}   ({rf_acc - baseline_acc:+.4f})")
 print(f"  Logistic Regression  {lr_acc:.4f}   ({lr_acc - baseline_acc:+.4f})")
+
+# ---------- Save results for the API ----------
+import json
+from datetime import datetime
+
+results = {
+    "generatedAt": datetime.now().isoformat(),
+    "dataset": {
+        "totalExamples": int(len(df)),
+        "tickers": int(df["symbol"].nunique()),
+        "startDate": str(df["date"].min().date()),
+        "endDate": str(df["date"].max().date()),
+        "overallUpRate": float((df["target"] == "UP").mean()),
+    },
+    "split": {
+        "cutoffDate": str(pd.Timestamp(cutoff).date()),
+        "trainSize": int(len(train)),
+        "testSize": int(len(test)),
+        "trainUpRate": float(y_train.mean()),
+        "testUpRate": float(y_test.mean()),
+    },
+    "models": [
+        {
+            "name": "Baseline (majority class)",
+            "accuracy": float(baseline_acc),
+            "vsBaseline": 0.0,
+            "predictedUpRate": float(majority),
+        },
+        {
+            "name": "Random Forest",
+            "accuracy": float(rf_acc),
+            "vsBaseline": float(rf_acc - baseline_acc),
+            "predictedUpRate": float(rf_preds.mean()),
+        },
+        {
+            "name": "Logistic Regression",
+            "accuracy": float(lr_acc),
+            "vsBaseline": float(lr_acc - baseline_acc),
+            "predictedUpRate": float(lr_preds.mean()),
+        },
+    ],
+    "featureImportance": [
+        {"feature": name, "importance": float(val)}
+        for name, val in importance.items()
+    ],
+    "byTicker": [
+        {"symbol": sym, "accuracy": float(row["mean"]), "days": int(row["count"])}
+        for sym, row in by_ticker.iterrows()
+    ],
+}
+
+output_path = "../src/main/resources/evaluation-results.json"
+with open(output_path, "w") as f:
+    json.dump(results, f, indent=2)
+
+print("=" * 60)
+print(f"Results written to {output_path}")
