@@ -1,154 +1,129 @@
 import requests
 import pandas as pd
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix
 
-
-SPRING_BOOT_URL = "http://localhost:8080"
-
-FEATURE_COLUMNS = [
-    "dailyReturn",
-    "movingAverage5",
-    "movingAverage20",
-    "momentum5",
-    "volatility20",
-    "volumeChange"
+FEATURES = [
+    # stock-only
+    "return1d", "return2d", "return5d", "return10d",
+    "priceVsMa5", "priceVsMa20", "ma5VsMa20",
+    "volatility5", "volatility20",
+    "volumeVsAvg",
+    "intradayRange", "closePosition", "gapOpen",
+    # market context
+    "marketReturn1d", "marketReturn5d",
+    "excessReturn1d", "excessReturn5d",
+    "relativeStrength20",
+    "vixLevel", "vixChange",
 ]
 
+# ---------- Load pooled data ----------
+print("Fetching pooled training data...")
+response = requests.get("http://localhost:8080/training-data/all", timeout=300)
+df = pd.DataFrame(response.json())
 
-def load_training_data(symbol):
-    url = f"{SPRING_BOOT_URL}/stocks/{symbol}/training-data"
+df["date"] = pd.to_datetime(df["date"])
+df = df.sort_values(["date", "symbol"]).reset_index(drop=True)
+df = df.dropna(subset=FEATURES + ["target"])
 
-    response = requests.get(url)
-    response.raise_for_status()
+print(f"Total examples: {len(df):,}")
+print(f"Tickers: {df['symbol'].nunique()}")
+print(f"Date range: {df['date'].min().date()} to {df['date'].max().date()}")
+print(f"Overall UP rate: {(df['target'] == 'UP').mean():.4f}")
+print()
 
-    data = response.json()
+# ---------- Chronological split BY DATE (not by row) ----------
+unique_dates = np.sort(df["date"].unique())
+cutoff = unique_dates[int(len(unique_dates) * 0.8)]
 
-    df = pd.DataFrame(data)
+train = df[df["date"] < cutoff]
+test = df[df["date"] >= cutoff]
 
-    df["date"] = pd.to_datetime(df["date"])
+X_train, y_train = train[FEATURES], (train["target"] == "UP").astype(int)
+X_test, y_test = test[FEATURES], (test["target"] == "UP").astype(int)
 
-    # Very important:
-    # oldest observations first, newest observations last
-    df = df.sort_values("date").reset_index(drop=True)
+print(f"Cutoff date: {pd.Timestamp(cutoff).date()}")
+print(f"Train: {len(train):,}  ({train['date'].min().date()} to {train['date'].max().date()})")
+print(f"Test:  {len(test):,}  ({test['date'].min().date()} to {test['date'].max().date()})")
+print(f"Train UP rate: {y_train.mean():.4f}")
+print(f"Test UP rate:  {y_test.mean():.4f}")
+print()
 
-    return df
+# ---------- Baseline ----------
+majority = y_train.mode()[0]
+baseline_acc = accuracy_score(y_test, np.full(len(y_test), majority))
 
+print("=" * 60)
+print(f"BASELINE (always predict {'UP' if majority == 1 else 'DOWN'})")
+print(f"Accuracy: {baseline_acc:.4f}")
+print()
 
-def train_model(df):
-    X = df[FEATURE_COLUMNS]
-    y = df["target"]
+# ---------- Random Forest ----------
+rf = RandomForestClassifier(
+    n_estimators=400,
+    max_depth=6,
+    min_samples_leaf=100,
+    class_weight="balanced",
+    n_jobs=-1,
+    random_state=42
+)
+rf.fit(X_train, y_train)
+rf_preds = rf.predict(X_test)
+rf_acc = accuracy_score(y_test, rf_preds)
 
-    split_index = int(len(df) * 0.80)
+print("=" * 60)
+print("RANDOM FOREST")
+print(f"Accuracy: {rf_acc:.4f}   (baseline {baseline_acc:.4f})")
+print(f"Predicted UP {rf_preds.mean():.1%} of the time")
+print("Confusion matrix (rows=actual DOWN/UP, cols=pred DOWN/UP):")
+print(confusion_matrix(y_test, rf_preds))
+print()
 
-    X_train = X.iloc[:split_index]
-    X_test = X.iloc[split_index:]
-    y_train = y.iloc[:split_index]
-    y_test = y.iloc[split_index:]
+# ---------- Logistic Regression ----------
+scaler = StandardScaler()
+X_train_s = scaler.fit_transform(X_train)
+X_test_s = scaler.transform(X_test)
 
-    print(f"Training examples: {len(X_train)}")
-    print(f"Testing examples: {len(X_test)}")
-    print()
+lr = LogisticRegression(max_iter=3000, class_weight="balanced")
+lr.fit(X_train_s, y_train)
+lr_preds = lr.predict(X_test_s)
+lr_acc = accuracy_score(y_test, lr_preds)
 
-    # -------------------------
-    # Baseline
-    # -------------------------
+print("=" * 60)
+print("LOGISTIC REGRESSION")
+print(f"Accuracy: {lr_acc:.4f}   (baseline {baseline_acc:.4f})")
+print(f"Predicted UP {lr_preds.mean():.1%} of the time")
+print("Confusion matrix:")
+print(confusion_matrix(y_test, lr_preds))
+print()
 
-    baseline = DummyClassifier(strategy="most_frequent")
-    baseline.fit(X_train, y_train)
+# ---------- Feature importance ----------
+print("=" * 60)
+print("RANDOM FOREST FEATURE IMPORTANCE")
+importance = pd.Series(rf.feature_importances_, index=FEATURES).sort_values(ascending=False)
+for name, val in importance.items():
+    print(f"  {name:20s} {val:.4f}")
+print()
 
-    baseline_predictions = baseline.predict(X_test)
+# ---------- Per-ticker breakdown ----------
+print("=" * 60)
+print("RANDOM FOREST ACCURACY BY TICKER (test period)")
+test_eval = test.copy()
+test_eval["pred"] = rf_preds
+test_eval["actual"] = y_test.values
+test_eval["correct"] = (test_eval["pred"] == test_eval["actual"])
 
-    baseline_accuracy = accuracy_score(
-        y_test,
-        baseline_predictions
-    )
+by_ticker = test_eval.groupby("symbol")["correct"].agg(["mean", "count"]).sort_values("mean", ascending=False)
+for sym, row in by_ticker.iterrows():
+    print(f"  {sym:6s} {row['mean']:.4f}  ({int(row['count'])} days)")
+print()
 
-    # -------------------------
-    # Random Forest
-    # -------------------------
-
-    random_forest = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=5,
-        random_state=42
-    )
-
-    random_forest.fit(X_train, y_train)
-
-    rf_predictions = random_forest.predict(X_test)
-
-    rf_accuracy = accuracy_score(
-        y_test,
-        rf_predictions
-    )
-
-    # -------------------------
-    # Logistic Regression
-    # -------------------------
-
-    scaler = StandardScaler()
-
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    logistic_regression = LogisticRegression(
-        max_iter=1000,
-        random_state=42
-    )
-
-    logistic_regression.fit(
-        X_train_scaled,
-        y_train
-    )
-
-    lr_predictions = logistic_regression.predict(
-        X_test_scaled
-    )
-
-    lr_accuracy = accuracy_score(
-        y_test,
-        lr_predictions
-    )
-
-    # -------------------------
-    # Results
-    # -------------------------
-
-    print(f"Baseline accuracy:            {baseline_accuracy:.2%}")
-    print(f"Random Forest accuracy:       {rf_accuracy:.2%}")
-    print(f"Logistic Regression accuracy: {lr_accuracy:.2%}")
-    print()
-
-    print("Random Forest:")
-    print(
-        classification_report(
-            y_test,
-            rf_predictions,
-            zero_division=0
-        )
-    )
-
-    print("Logistic Regression:")
-    print(
-        classification_report(
-            y_test,
-            lr_predictions,
-            zero_division=0
-        )
-    )
-
-    return random_forest
-
-
-if __name__ == "__main__":
-
-    training_data = load_training_data("NVDA")
-
-    print(f"Total examples: {len(training_data)}")
-    print()
-
-    model = train_model(training_data)
+# ---------- Summary ----------
+print("=" * 60)
+print("SUMMARY")
+print(f"  Baseline             {baseline_acc:.4f}")
+print(f"  Random Forest        {rf_acc:.4f}   ({rf_acc - baseline_acc:+.4f})")
+print(f"  Logistic Regression  {lr_acc:.4f}   ({lr_acc - baseline_acc:+.4f})")
